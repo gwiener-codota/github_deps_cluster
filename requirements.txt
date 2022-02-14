@@ -1,0 +1,10 @@
+jupyter
+matplotlib
+mlxtend
+networkx
+numpy
+pandas
+pyvis
+scikit-learn
+tabulate
+tqdm
