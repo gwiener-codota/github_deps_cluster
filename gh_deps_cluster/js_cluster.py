@@ -1,5 +1,6 @@
 import data
 import itertools
+import numpy as np
 import pandas as pd
 from gh_deps_cluster.pair_share import pair_share
 from sklearn.cluster import DBSCAN, KMeans
@@ -21,13 +22,14 @@ vectorize = TfidfVectorizer(
     norm='l1'
 )
 X = vectorize.fit_transform(df.dependencies)
+rev_idx = vectorize.get_feature_names_out()
 print(X.shape)
 
 # scan = DBSCAN(metric='cosine', eps=0.33, n_jobs=32)
-scan = KMeans(n_clusters=16)
-Y = scan.fit_predict(X)
-nz_0, nz_1 = scan.cluster_centers_.nonzero()
-rev_idx = vectorize.get_feature_names_out()
-for k, g in itertools.groupby(zip(nz_0, nz_1), key=lambda x: x[0]):
-    names = map(lambda t: rev_idx[t[1]], g)
-    print(k, *names)
+scan = KMeans(n_clusters=32)
+scan.fit(X)
+threshold = np.quantile(scan.cluster_centers_, .9)
+indices = np.argwhere(scan.cluster_centers_ >= threshold)
+for k, g in itertools.groupby(indices, lambda x: x[0]):
+    names = [rev_idx[x[1]] for x in g]
+    print(k, names)
